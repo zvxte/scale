@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"os"
 )
 
@@ -18,29 +19,21 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
-	if _, err := os.Stat(caCertFile); err != nil {
-		return nil, err
-	}
-	if _, err := os.Stat(keyFile); err != nil {
-		return nil, err
-	}
-	if _, err := os.Stat(certFile); err != nil {
-		return nil, err
-	}
-
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load X509 key pair: %w", err)
 	}
 
 	caCert, err := os.ReadFile(caCertFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read CA certificate: %w", err)
 	}
 
 	caCertPool := x509.NewCertPool()
 	if !caCertPool.AppendCertsFromPEM(caCert) {
-		return nil, errors.New("failed to append CA certificate to pool")
+		return nil, errors.New(
+			"failed to append CA certificate to the certificate pool",
+		)
 	}
 
 	tlsConfig := &tls.Config{
