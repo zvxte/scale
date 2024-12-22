@@ -14,11 +14,7 @@ const (
 	certFile   = "/etc/scale/node.crt"
 )
 
-type Config struct {
-	TLSConfig *tls.Config
-}
-
-func LoadConfig() (*Config, error) {
+func LoadTLSConfig() (*tls.Config, error) {
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load X509 key pair: %w", err)
@@ -31,18 +27,12 @@ func LoadConfig() (*Config, error) {
 
 	caCertPool := x509.NewCertPool()
 	if !caCertPool.AppendCertsFromPEM(caCert) {
-		return nil, errors.New(
-			"failed to append CA certificate to the certificate pool",
-		)
+		return nil, errors.New("failed to append CA certificate to certificate pool")
 	}
 
-	tlsConfig := &tls.Config{
+	return &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		ClientCAs:    caCertPool,
 		ClientAuth:   tls.RequireAndVerifyClientCert,
-	}
-
-	return &Config{
-		TLSConfig: tlsConfig,
 	}, nil
 }

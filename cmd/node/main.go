@@ -10,13 +10,14 @@ import (
 func main() {
 	logger := log.Default()
 
-	config, err := node.LoadConfig()
+	tlsConfig, err := node.LoadTLSConfig()
 	if err != nil {
-		logger.Println(fmt.Errorf("failed to load config: %w", err))
+		logger.Println(fmt.Errorf("failed to load TLS config: %w", err))
 		return
 	}
 
-	if err := node.Run(logger, config); err != nil {
+	server := node.NewServer(tlsConfig, logger)
+	if err := server.ListenAndServeTLS("", ""); err != nil {
 		logger.Println(fmt.Errorf("failed to run server: %w", err))
 		return
 	}
