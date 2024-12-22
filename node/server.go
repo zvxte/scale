@@ -9,9 +9,11 @@ import (
 func NewServer(tlsConfig *tls.Config, logger *log.Logger) *http.Server {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /", getIndex(logger))
+	statsMux := newStatsMux(logger)
+	mux.Handle("/stats/", http.StripPrefix("/stats", statsMux))
 
 	return &http.Server{
+		Addr:      ":4000",
 		Handler:   mux,
 		TLSConfig: tlsConfig,
 		ErrorLog:  logger,
