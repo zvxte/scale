@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -54,7 +55,9 @@ func (m *CPUMonitor) Start() {
 		// Initialize stats to make the first usage update accurate.
 		stats, err := readCpuStats()
 		if err != nil {
-			m.logger.Printf("failed to read CPU stats: %v", err)
+			m.logger.Println(
+				fmt.Errorf("failed to read CPU stats: %w", err),
+			)
 			m.Stop()
 			return
 		}
@@ -68,7 +71,9 @@ func (m *CPUMonitor) Start() {
 			default:
 				currentStats, err := readCpuStats()
 				if err != nil {
-					m.logger.Printf("failed to read CPU stats: %v", err)
+					m.logger.Println(
+						fmt.Errorf("failed to read CPU stats: %w", err),
+					)
 					m.Stop()
 					return
 				}
