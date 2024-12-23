@@ -9,12 +9,24 @@ import (
 )
 
 const (
-	caCertFile = "/etc/scale/ca.crt"
-	keyFile    = "/etc/scale/node.key"
-	certFile   = "/etc/scale/node.crt"
+	DefaultCACertFile = "/etc/scale/ca.crt"
+	DefaultKeyFile    = "/etc/scale/node.key"
+	DefaultCertFile   = "/etc/scale/node.crt"
 )
 
-func LoadTLSConfig() (*tls.Config, error) {
+// LoadMTLSConfig loads the TLS configuration for mutual authentication.
+// Default file paths will be used for empty arguments.
+func LoadMTLSConfig(caCertFile, keyFile, certFile string) (*tls.Config, error) {
+	if caCertFile == "" {
+		caCertFile = DefaultCACertFile
+	}
+	if keyFile == "" {
+		keyFile = DefaultKeyFile
+	}
+	if certFile == "" {
+		certFile = DefaultCertFile
+	}
+
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load X509 key pair: %w", err)

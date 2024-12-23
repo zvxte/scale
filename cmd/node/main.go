@@ -10,7 +10,7 @@ import (
 func main() {
 	logger := log.Default()
 
-	tlsConfig, err := node.LoadTLSConfig()
+	tlsConfig, err := node.LoadMTLSConfig("", "", "")
 	if err != nil {
 		logger.Println(fmt.Errorf("failed to load TLS config: %w", err))
 		return
