@@ -13,12 +13,7 @@ import (
 	"time"
 )
 
-const (
-	cpuStatsFile = "/proc/stat"
-	cpuMaxUsage  = 100
-)
-
-var errInvalidCpuStatsFile = errors.New("unexpected /proc/stat file format")
+const cpuMaxUsage = 100
 
 type CPUMonitor struct {
 	// CPU usage percentage
@@ -103,11 +98,11 @@ func (m *CPUMonitor) Start() {
 func (m *CPUMonitor) Stop() {
 	if m.cancel != nil {
 		m.cancel()
-
 		m.wg.Wait()
 
 		m.ctx = nil
 		m.cancel = nil
+
 		m.setUsage(0)
 	}
 }
@@ -123,6 +118,10 @@ func (m *CPUMonitor) setUsage(usage uint8) {
 	defer m.mu.Unlock()
 	m.usage = usage
 }
+
+const cpuStatsFile = "/proc/stat"
+
+var errInvalidCpuStatsFile = errors.New("unexpected /proc/stat file format")
 
 type cpuStats struct {
 	total uint64

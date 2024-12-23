@@ -13,12 +13,7 @@ import (
 	"time"
 )
 
-const (
-	memStatsFile = "/proc/meminfo"
-	memMaxUsage  = 100
-)
-
-var errInvalidMemStatsFile = errors.New("unexpected /proc/meminfo file format")
+const memMaxUsage = 100
 
 type MemMonitor struct {
 	// Mem usage percentage
@@ -88,11 +83,11 @@ func (m *MemMonitor) Start() {
 func (m *MemMonitor) Stop() {
 	if m.cancel != nil {
 		m.cancel()
-
 		m.wg.Wait()
 
 		m.ctx = nil
 		m.cancel = nil
+
 		m.setUsage(0)
 	}
 }
@@ -108,6 +103,10 @@ func (m *MemMonitor) setUsage(usage uint8) {
 	defer m.mu.Unlock()
 	m.usage = usage
 }
+
+const memStatsFile = "/proc/meminfo"
+
+var errInvalidMemStatsFile = errors.New("unexpected /proc/meminfo file format")
 
 type memStats struct {
 	total     uint64

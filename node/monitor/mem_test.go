@@ -53,7 +53,7 @@ func TestMemMonitor(t *testing.T) {
 			usage := test.monitor.Usage()
 			if usage > 100 {
 				t.Errorf(
-					"Start() Usage=%d, MaxUsage=%d",
+					"MemMonitor{} Usage=%d, MaxUsage=%d",
 					usage, cpuMaxUsage,
 				)
 			}
@@ -66,10 +66,7 @@ func TestReadMemStats(t *testing.T) {
 		name      string
 		shouldErr bool
 	}{
-		{
-			"Valid",
-			false,
-		},
+		{"Valid", false},
 	}
 
 	for _, test := range tests {

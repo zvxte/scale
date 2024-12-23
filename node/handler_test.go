@@ -19,8 +19,10 @@ func TestGetStatsSummary(t *testing.T) {
 		http.MethodGet, "/stats/summary", nil,
 	)
 
-	maxCpu := uint8(100)
-	maxMem := uint8(100)
+	const (
+		maxCpu = 100
+		maxMem = 100
+	)
 
 	tests := []struct {
 		name               string
