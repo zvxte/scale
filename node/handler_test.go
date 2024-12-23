@@ -23,7 +23,7 @@ func TestGetStatsSummary(t *testing.T) {
 		expectedStatusCode int
 	}{
 		{
-			"valid",
+			"Valid",
 			200,
 		},
 	}
