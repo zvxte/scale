@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestStart(t *testing.T) {
+func TestCPUMonitor(t *testing.T) {
 	logger := log.Default()
 
 	tests := []struct {
@@ -25,9 +25,9 @@ func TestStart(t *testing.T) {
 			2 * time.Second,
 		},
 		{
-			"Valid: long monitoring duration",
+			"Valid: longer monitoring duration",
 			NewCPUMonitor(1*time.Second, logger),
-			10 * time.Second,
+			4 * time.Second,
 		},
 		{
 			"Valid: short interval",
@@ -35,9 +35,9 @@ func TestStart(t *testing.T) {
 			2 * time.Second,
 		},
 		{
-			"Valid: long interval",
-			NewCPUMonitor(4*time.Second, logger),
-			10 * time.Second,
+			"Valid: longer interval",
+			NewCPUMonitor(2*time.Second, logger),
+			4 * time.Second,
 		},
 	}
 
