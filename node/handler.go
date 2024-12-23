@@ -1,14 +1,20 @@
 package node
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 )
 
-func getIndex(logger *log.Logger) http.HandlerFunc {
+type statsSummary struct {
+	Cpu uint8 `json:"cpu"`
+	Mem uint8 `json:"mem"`
+}
+
+func getStatsSummary(logger *log.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Printf("%s: %s\n", r.Method, r.URL)
-		fmt.Fprintf(w, "%s: %s\n", r.Method, r.URL)
+		if err := json.NewEncoder(w).Encode(statsSummary{}); err != nil {
+			logger.Println(err)
+		}
 	}
 }
