@@ -131,11 +131,11 @@ func readMemStats() (memStats, error) {
 
 	totalLine := lines[0]
 	if !strings.HasPrefix(totalLine, "MemTotal") {
-		return memStats{}, errInvalidCpuStatsFile
+		return memStats{}, errInvalidMemStatsFile
 	}
 	totalParts := strings.Fields(totalLine)
 	if len(totalParts) < 3 {
-		return memStats{}, errInvalidCpuStatsFile
+		return memStats{}, errInvalidMemStatsFile
 	}
 	total, err := strconv.ParseUint(totalParts[1], 10, 64)
 	if err != nil {
@@ -144,11 +144,11 @@ func readMemStats() (memStats, error) {
 
 	availableLine := lines[2]
 	if !strings.HasPrefix(availableLine, "MemAvailable") {
-		return memStats{}, errInvalidCpuStatsFile
+		return memStats{}, errInvalidMemStatsFile
 	}
 	availableParts := strings.Fields(availableLine)
 	if len(availableParts) < 3 {
-		return memStats{}, errInvalidCpuStatsFile
+		return memStats{}, errInvalidMemStatsFile
 	}
 	available, err := strconv.ParseUint(availableParts[1], 10, 64)
 	if err != nil {
