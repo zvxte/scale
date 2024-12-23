@@ -67,6 +67,11 @@ func (m *MemMonitor) Start() {
 					return
 				}
 
+				// Avoid division by zero
+				if stats.total == 0 {
+					stats.total = 1
+				}
+
 				usage := 100.0 *
 					(1.0 - (float32(stats.available) / float32(stats.total)))
 				if usage > memMaxUsage {
