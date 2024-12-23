@@ -8,13 +8,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/zvxte/scale/node/monitor"
 )
 
 func TestGetStatsSummary(t *testing.T) {
 	logger := log.Default()
+	monitor := monitor.NewMockMonitor()
 	req := httptest.NewRequest(
 		http.MethodGet, "/stats/summary", nil,
 	)
+
 	maxCpu := uint8(100)
 	maxMem := uint8(100)
 
@@ -22,16 +26,15 @@ func TestGetStatsSummary(t *testing.T) {
 		name               string
 		expectedStatusCode int
 	}{
-		{
-			"Valid",
-			200,
-		},
+		{"Valid", 200},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
-			handler := getStatsSummary(logger)
+			handler := getStatsSummary(
+				monitor, monitor, logger,
+			)
 			handler(recorder, req)
 
 			resp := recorder.Result()
@@ -42,7 +45,7 @@ func TestGetStatsSummary(t *testing.T) {
 				)
 			}
 
-			// Set stats to max values to later verify if they changed
+			// Set stats to max values to later verify if they have changed
 			stats := statsSummary{Cpu: 255, Mem: 255}
 
 			var rawBody bytes.Buffer

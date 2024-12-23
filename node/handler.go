@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/zvxte/scale/node/monitor"
 )
 
 type statsSummary struct {
@@ -11,9 +13,16 @@ type statsSummary struct {
 	Mem uint8 `json:"mem"`
 }
 
-func getStatsSummary(logger *log.Logger) http.HandlerFunc {
+func getStatsSummary(
+	cpuMonitor monitor.Monitor,
+	memMonitor monitor.Monitor,
+	logger *log.Logger,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := json.NewEncoder(w).Encode(statsSummary{}); err != nil {
+		if err := json.NewEncoder(w).Encode(statsSummary{
+			Cpu: cpuMonitor.Usage(),
+			Mem: memMonitor.Usage(),
+		}); err != nil {
 			logger.Println(err)
 		}
 	}
