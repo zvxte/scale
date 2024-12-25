@@ -15,23 +15,22 @@ const (
 )
 
 // LoadMTLSConfig loads the TLS configuration for mutual authentication.
-// Default file paths will be used for empty arguments.
+// Default file paths will be used for empty string arguments.
 func LoadMTLSConfig(caCertFile, keyFile, certFile string) (*tls.Config, error) {
-	if caCertFile == "" {
-		caCertFile = DefaultCACertFile
-	}
 	if keyFile == "" {
 		keyFile = DefaultKeyFile
 	}
 	if certFile == "" {
 		certFile = DefaultCertFile
 	}
-
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load X509 key pair: %w", err)
 	}
 
+	if caCertFile == "" {
+		caCertFile = DefaultCACertFile
+	}
 	caCert, err := os.ReadFile(caCertFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read CA certificate: %w", err)
