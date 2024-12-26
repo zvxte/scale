@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -17,6 +18,8 @@ const (
 	MemMinUsage    = 0
 	MemMaxUsage    = 100
 	MemMinInterval = 1 * time.Second
+
+	memStatsFile = "/proc/meminfo"
 )
 
 type Mem struct {
@@ -61,7 +64,12 @@ func (m *Mem) Start() {
 				return
 
 			default:
-				stats, err := readMemStats()
+				file, err := os.Open(memStatsFile)
+				if err != nil {
+					return
+				}
+				stats, err := loadMemStats(file)
+				file.Close()
 				if err != nil {
 					m.logger.Println(
 						fmt.Errorf("failed to read mem stats: %w", err),
@@ -111,8 +119,6 @@ func (m *Mem) setUsage(usage uint8) {
 	m.usage = usage
 }
 
-const memStatsFile = "/proc/meminfo"
-
 var errInvalidMemStatsFile = errors.New("unexpected /proc/meminfo file format")
 
 type memStats struct {
@@ -120,19 +126,14 @@ type memStats struct {
 	available uint64
 }
 
-func readMemStats() (memStats, error) {
-	file, err := os.Open(memStatsFile)
-	if err != nil {
-		return memStats{}, err
-	}
-	defer file.Close()
-
-	// MemTotal:       16193664 kB\n
-	// MemFree:        11712900 kB\n
-	// MemAvailable:   13580972 kB\n
+func loadMemStats(r io.Reader) (memStats, error) {
+	// MemTotal:       16000000 kB\n
+	// MemFree:          800000 kB\n
+	// MemAvailable:    8000000 kB\n
+	// ...
 	lines := make([]string, 3)
 
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(r)
 	for i := 0; i < 3 && scanner.Scan(); i++ {
 		lines[i] = scanner.Text()
 	}
