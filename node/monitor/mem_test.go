@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestMemMonitor(t *testing.T) {
+func TestMem(t *testing.T) {
 	logger := log.Default()
 
 	tests := []struct {
