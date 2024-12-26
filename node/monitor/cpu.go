@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -17,6 +18,8 @@ const (
 	CPUMinUsage    = 0
 	CPUMaxUsage    = 100
 	CPUMinInterval = 1 * time.Second
+
+	cpuStatsFile = "/proc/stat"
 )
 
 type CPU struct {
@@ -56,14 +59,15 @@ func (m *CPU) Start() {
 		defer m.wg.Done()
 
 		// Initialize stats to make the first usage update accurate.
-		stats, err := readCpuStats()
+		stats, err := readCPUStatsFile()
 		if err != nil {
 			m.logger.Println(
-				fmt.Errorf("failed to read CPU stats: %w", err),
+				fmt.Errorf("failed to read CPU stats file: %w", err),
 			)
 			m.Stop()
 			return
 		}
+
 		time.Sleep(m.interval)
 
 		for {
@@ -72,10 +76,10 @@ func (m *CPU) Start() {
 				return
 
 			default:
-				currentStats, err := readCpuStats()
+				currentStats, err := readCPUStatsFile()
 				if err != nil {
 					m.logger.Println(
-						fmt.Errorf("failed to read CPU stats: %w", err),
+						fmt.Errorf("failed to read CPU stats file: %w", err),
 					)
 					m.Stop()
 					return
@@ -127,25 +131,17 @@ func (m *CPU) setUsage(usage uint8) {
 	m.usage = usage
 }
 
-const cpuStatsFile = "/proc/stat"
-
-var errInvalidCpuStatsFile = errors.New("unexpected /proc/stat file format")
+var errInvalidCPUStats = errors.New("unexpected CPU stats format")
 
 type cpuStats struct {
 	total uint64
 	idle  uint64
 }
 
-func readCpuStats() (cpuStats, error) {
-	file, err := os.Open(cpuStatsFile)
-	if err != nil {
-		return cpuStats{}, err
-	}
-	defer file.Close()
-
+func loadCPUStats(r io.Reader) (cpuStats, error) {
 	line := ""
 
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(r)
 	if scanner.Scan() {
 		line = scanner.Text()
 	}
@@ -154,13 +150,13 @@ func readCpuStats() (cpuStats, error) {
 	}
 
 	if !strings.HasPrefix(line, "cpu") {
-		return cpuStats{}, errInvalidCpuStatsFile
+		return cpuStats{}, errInvalidCPUStats
 	}
 
 	// "cpu  4287477 2 657908 43117172 1758 128015 49404 0 0 0\n"
 	parts := strings.Fields(line)
 	if len(parts) < 11 {
-		return cpuStats{}, errInvalidCpuStatsFile
+		return cpuStats{}, errInvalidCPUStats
 	}
 
 	var total, idle uint64
@@ -176,4 +172,13 @@ func readCpuStats() (cpuStats, error) {
 		total += value
 	}
 	return cpuStats{total: total, idle: idle}, nil
+}
+
+func readCPUStatsFile() (cpuStats, error) {
+	file, err := os.Open(cpuStatsFile)
+	if err != nil {
+		return cpuStats{}, err
+	}
+	defer file.Close()
+	return loadCPUStats(file)
 }

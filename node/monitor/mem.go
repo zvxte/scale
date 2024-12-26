@@ -64,15 +64,10 @@ func (m *Mem) Start() {
 				return
 
 			default:
-				file, err := os.Open(memStatsFile)
-				if err != nil {
-					return
-				}
-				stats, err := loadMemStats(file)
-				file.Close()
+				stats, err := readMemStatsFile()
 				if err != nil {
 					m.logger.Println(
-						fmt.Errorf("failed to read mem stats: %w", err),
+						fmt.Errorf("failed to read mem stats file: %w", err),
 					)
 					m.Stop()
 					return
@@ -119,7 +114,7 @@ func (m *Mem) setUsage(usage uint8) {
 	m.usage = usage
 }
 
-var errInvalidMemStatsFile = errors.New("unexpected /proc/meminfo file format")
+var errInvalidMemStats = errors.New("unexpected mem stats format")
 
 type memStats struct {
 	total     uint64
@@ -143,11 +138,11 @@ func loadMemStats(r io.Reader) (memStats, error) {
 
 	totalLine := lines[0]
 	if !strings.HasPrefix(totalLine, "MemTotal") {
-		return memStats{}, errInvalidMemStatsFile
+		return memStats{}, errInvalidMemStats
 	}
 	totalParts := strings.Fields(totalLine)
 	if len(totalParts) < 3 {
-		return memStats{}, errInvalidMemStatsFile
+		return memStats{}, errInvalidMemStats
 	}
 	total, err := strconv.ParseUint(totalParts[1], 10, 64)
 	if err != nil {
@@ -156,11 +151,11 @@ func loadMemStats(r io.Reader) (memStats, error) {
 
 	availableLine := lines[2]
 	if !strings.HasPrefix(availableLine, "MemAvailable") {
-		return memStats{}, errInvalidMemStatsFile
+		return memStats{}, errInvalidMemStats
 	}
 	availableParts := strings.Fields(availableLine)
 	if len(availableParts) < 3 {
-		return memStats{}, errInvalidMemStatsFile
+		return memStats{}, errInvalidMemStats
 	}
 	available, err := strconv.ParseUint(availableParts[1], 10, 64)
 	if err != nil {
@@ -168,4 +163,13 @@ func loadMemStats(r io.Reader) (memStats, error) {
 	}
 
 	return memStats{total: total, available: available}, nil
+}
+
+func readMemStatsFile() (memStats, error) {
+	file, err := os.Open(memStatsFile)
+	if err != nil {
+		return memStats{}, err
+	}
+	defer file.Close()
+	return loadMemStats(file)
 }

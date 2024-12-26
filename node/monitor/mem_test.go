@@ -17,12 +17,12 @@ func TestMem(t *testing.T) {
 		duration time.Duration
 	}{
 		{
-			"Valid: No monitoring duration",
+			"Valid: no monitoring duration",
 			NewMem(1*time.Second, logger),
 			0 * time.Second,
 		},
 		{
-			"Valid: Short monitoring duration",
+			"Valid: short monitoring duration",
 			NewMem(1*time.Second, logger),
 			2 * time.Second,
 		},
@@ -59,10 +59,10 @@ func TestMem(t *testing.T) {
 			}
 
 			test.mem.Stop()
-			if test.mem.Usage() != 0 {
+			if test.mem.Usage() != MemMinUsage {
 				t.Errorf(
 					"Mem{} Usage=%d, ExpectedUsage=%d",
-					usage, test.mem.usage,
+					usage, MemMinUsage,
 				)
 			}
 		})
@@ -144,7 +144,7 @@ func TestLoadMemStats(t *testing.T) {
 			_, err := loadMemStats(test.r)
 			if (err != nil) != test.shouldErr {
 				t.Errorf(
-					"readMemStats() Error=%v, ShouldError=%v",
+					"loadMemStats() Error=%v, ShouldError=%v",
 					err, test.shouldErr,
 				)
 			}
