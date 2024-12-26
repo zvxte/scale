@@ -13,15 +13,12 @@ import (
 )
 
 func TestGetStatsSummary(t *testing.T) {
+	cpu := monitor.NewMock()
+	mem := monitor.NewMock()
 	logger := log.Default()
-	monitor := monitor.NewMockMonitor()
+
 	req := httptest.NewRequest(
 		http.MethodGet, "/stats/summary", nil,
-	)
-
-	const (
-		maxCpu = 100
-		maxMem = 100
 	)
 
 	tests := []struct {
@@ -34,9 +31,7 @@ func TestGetStatsSummary(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
-			handler := getStatsSummary(
-				monitor, monitor, logger,
-			)
+			handler := getStatsSummary(cpu, mem, logger)
 			handler(recorder, req)
 
 			resp := recorder.Result()
@@ -47,8 +42,9 @@ func TestGetStatsSummary(t *testing.T) {
 				)
 			}
 
-			// Set stats to max values to later verify if they have changed
-			stats := statsSummary{Cpu: 255, Mem: 255}
+			stats := statsSummary{
+				Cpu: monitor.CPUMaxUsage + 1, Mem: monitor.MemMaxUsage + 1,
+			}
 
 			var rawBody bytes.Buffer
 			tee := io.TeeReader(resp.Body, &rawBody)
@@ -57,29 +53,22 @@ func TestGetStatsSummary(t *testing.T) {
 			decoder.DisallowUnknownFields()
 			if err := decoder.Decode(&stats); err != nil {
 				t.Errorf(
-					"getStatsSummary() Error=%v",
-					err,
+					"getStatsSummary() Error=%v, Body=%s",
+					err, rawBody.String(),
 				)
 			}
 
-			if stats.Cpu == 255 || stats.Mem == 255 {
+			if stats.Cpu > monitor.CPUMaxUsage {
 				t.Errorf(
-					"getStatsSummary() Body=%s",
-					rawBody.String(),
+					"getStatsSummary() Cpu=%d, MaxCpu=%d, Body=%s",
+					stats.Cpu, monitor.CPUMaxUsage, rawBody.String(),
 				)
 			}
 
-			if stats.Cpu > maxCpu {
+			if stats.Mem > monitor.MemMaxUsage {
 				t.Errorf(
-					"getStatsSummary() Cpu=%d, MaxCpu=%d",
-					stats.Cpu, maxCpu,
-				)
-			}
-
-			if stats.Mem > maxMem {
-				t.Errorf(
-					"getStatsSummary() Mem=%d, MaxMem=%d",
-					stats.Mem, maxMem,
+					"getStatsSummary() Mem=%d, MaxMem=%d, Body=%s",
+					stats.Mem, monitor.MemMaxUsage, rawBody.String(),
 				)
 			}
 		})
