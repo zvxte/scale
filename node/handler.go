@@ -14,14 +14,14 @@ type statsSummary struct {
 }
 
 func getStatsSummary(
-	cpuMonitor monitor.Monitor,
-	memMonitor monitor.Monitor,
+	cpu monitor.Monitor,
+	mem monitor.Monitor,
 	logger *log.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewEncoder(w).Encode(statsSummary{
-			Cpu: cpuMonitor.Usage(),
-			Mem: memMonitor.Usage(),
+			Cpu: cpu.Usage(),
+			Mem: mem.Usage(),
 		}); err != nil {
 			logger.Println(err)
 		}

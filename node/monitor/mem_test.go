@@ -11,32 +11,32 @@ func TestMemMonitor(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		monitor  *MemMonitor
+		monitor  *Mem
 		duration time.Duration
 	}{
 		{
 			"Valid: No monitoring duration",
-			NewMemMonitor(1*time.Second, logger),
+			NewMem(1*time.Second, logger),
 			0 * time.Second,
 		},
 		{
 			"Valid: Short monitoring duration",
-			NewMemMonitor(1*time.Second, logger),
+			NewMem(1*time.Second, logger),
 			2 * time.Second,
 		},
 		{
 			"Valid: longer monitoring duration",
-			NewMemMonitor(1*time.Second, logger),
+			NewMem(1*time.Second, logger),
 			4 * time.Second,
 		},
 		{
 			"Valid: short interval",
-			NewMemMonitor(250*time.Millisecond, logger),
+			&Mem{interval: 250 * time.Millisecond, logger: logger},
 			2 * time.Second,
 		},
 		{
 			"Valid: longer interval",
-			NewMemMonitor(2*time.Second, logger),
+			NewMem(2*time.Second, logger),
 			4 * time.Second,
 		},
 	}
@@ -53,8 +53,8 @@ func TestMemMonitor(t *testing.T) {
 			usage := test.monitor.Usage()
 			if usage > 100 {
 				t.Errorf(
-					"MemMonitor{} Usage=%d, MaxUsage=%d",
-					usage, cpuMaxUsage,
+					"Mem{} Usage=%d, MaxUsage=%d",
+					usage, MemMaxUsage,
 				)
 			}
 		})

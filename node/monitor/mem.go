@@ -13,9 +13,13 @@ import (
 	"time"
 )
 
-const memMaxUsage = 100
+const (
+	MemMinUsage    = 0
+	MemMaxUsage    = 100
+	MemMinInterval = 1 * time.Second
+)
 
-type MemMonitor struct {
+type Mem struct {
 	// Mem usage percentage
 	usage uint8
 
@@ -29,14 +33,18 @@ type MemMonitor struct {
 	cancel context.CancelFunc
 }
 
-func NewMemMonitor(interval time.Duration, logger *log.Logger) *MemMonitor {
-	return &MemMonitor{
+func NewMem(interval time.Duration, logger *log.Logger) *Mem {
+	if interval < MemMinInterval {
+		interval = MemMinInterval
+	}
+
+	return &Mem{
 		interval: interval,
 		logger:   logger,
 	}
 }
 
-func (m *MemMonitor) Start() {
+func (m *Mem) Start() {
 	if m.ctx != nil {
 		return
 	}
@@ -67,10 +75,9 @@ func (m *MemMonitor) Start() {
 					stats.total = 1
 				}
 
-				usage := 100.0 *
-					(1.0 - (float32(stats.available) / float32(stats.total)))
-				if usage > memMaxUsage {
-					usage = memMaxUsage
+				usage := 100 - ((stats.available * 100) / stats.total)
+				if usage > MemMaxUsage {
+					usage = MemMaxUsage
 				}
 				m.setUsage(uint8(usage))
 
@@ -80,7 +87,7 @@ func (m *MemMonitor) Start() {
 	}()
 }
 
-func (m *MemMonitor) Stop() {
+func (m *Mem) Stop() {
 	if m.cancel != nil {
 		m.cancel()
 		m.wg.Wait()
@@ -88,17 +95,17 @@ func (m *MemMonitor) Stop() {
 		m.ctx = nil
 		m.cancel = nil
 
-		m.setUsage(0)
+		m.setUsage(MemMinUsage)
 	}
 }
 
-func (m *MemMonitor) Usage() uint8 {
+func (m *Mem) Usage() uint8 {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.usage
 }
 
-func (m *MemMonitor) setUsage(usage uint8) {
+func (m *Mem) setUsage(usage uint8) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.usage = usage

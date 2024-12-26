@@ -4,18 +4,18 @@ import (
 	"math/rand"
 )
 
-const mockMaxUsage = 100
+const MockMaxUsage = 100
 
-type MockMonitor struct{}
+type Mock struct{}
 
-func NewMockMonitor() *MockMonitor {
-	return &MockMonitor{}
+func NewMock() *Mock {
+	return &Mock{}
 }
 
-func (m *MockMonitor) Start() {}
+func (m *Mock) Start() {}
 
-func (m *MockMonitor) Stop() {}
+func (m *Mock) Stop() {}
 
-func (m *MockMonitor) Usage() uint8 {
-	return uint8(rand.Intn(mockMaxUsage + 1))
+func (m *Mock) Usage() uint8 {
+	return uint8(rand.Intn(MockMaxUsage + 1))
 }

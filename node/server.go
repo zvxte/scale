@@ -10,15 +10,15 @@ import (
 )
 
 func NewServer(tlsConfig *tls.Config, logger *log.Logger) *http.Server {
-	cpuMonitor := monitor.NewCPUMonitor(5*time.Second, logger)
-	cpuMonitor.Start()
+	cpu := monitor.NewCPU(5*time.Second, logger)
+	cpu.Start()
 
-	memMonitor := monitor.NewMemMonitor(5*time.Second, logger)
-	memMonitor.Start()
+	mem := monitor.NewMem(5*time.Second, logger)
+	mem.Start()
 
 	mux := http.NewServeMux()
 
-	statsMux := newStatsMux(cpuMonitor, memMonitor, logger)
+	statsMux := newStatsMux(cpu, mem, logger)
 	mux.Handle("/stats/", http.StripPrefix("/stats", statsMux))
 
 	return &http.Server{

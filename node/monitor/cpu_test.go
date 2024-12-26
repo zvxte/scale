@@ -6,37 +6,37 @@ import (
 	"time"
 )
 
-func TestCPUMonitor(t *testing.T) {
+func TestCPU(t *testing.T) {
 	logger := log.Default()
 
 	tests := []struct {
 		name     string
-		monitor  *CPUMonitor
+		monitor  *CPU
 		duration time.Duration
 	}{
 		{
 			"Valid: No monitoring duration",
-			NewCPUMonitor(1*time.Second, logger),
+			NewCPU(1*time.Second, logger),
 			0 * time.Second,
 		},
 		{
 			"Valid: Short monitoring duration",
-			NewCPUMonitor(1*time.Second, logger),
+			NewCPU(1*time.Second, logger),
 			2 * time.Second,
 		},
 		{
 			"Valid: longer monitoring duration",
-			NewCPUMonitor(1*time.Second, logger),
+			NewCPU(1*time.Second, logger),
 			4 * time.Second,
 		},
 		{
 			"Valid: short interval",
-			NewCPUMonitor(250*time.Millisecond, logger),
+			&CPU{interval: 250 * time.Millisecond, logger: logger},
 			2 * time.Second,
 		},
 		{
 			"Valid: longer interval",
-			NewCPUMonitor(2*time.Second, logger),
+			NewCPU(2*time.Second, logger),
 			4 * time.Second,
 		},
 	}
@@ -51,10 +51,10 @@ func TestCPUMonitor(t *testing.T) {
 			time.Sleep(test.duration)
 
 			usage := test.monitor.Usage()
-			if usage > 100 {
+			if usage > CPUMaxUsage {
 				t.Errorf(
-					"CPUMonitor{} Usage=%d, MaxUsage=%d",
-					usage, cpuMaxUsage,
+					"CPU{} Usage=%d, MaxUsage=%d",
+					usage, CPUMaxUsage,
 				)
 			}
 		})

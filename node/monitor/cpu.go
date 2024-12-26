@@ -13,9 +13,13 @@ import (
 	"time"
 )
 
-const cpuMaxUsage = 100
+const (
+	CPUMinUsage    = 0
+	CPUMaxUsage    = 100
+	CPUMinInterval = 1 * time.Second
+)
 
-type CPUMonitor struct {
+type CPU struct {
 	// CPU usage percentage
 	usage uint8
 
@@ -29,14 +33,18 @@ type CPUMonitor struct {
 	cancel context.CancelFunc
 }
 
-func NewCPUMonitor(interval time.Duration, logger *log.Logger) *CPUMonitor {
-	return &CPUMonitor{
+func NewCPU(interval time.Duration, logger *log.Logger) *CPU {
+	if interval < CPUMinInterval {
+		interval = CPUMinInterval
+	}
+
+	return &CPU{
 		interval: interval,
 		logger:   logger,
 	}
 }
 
-func (m *CPUMonitor) Start() {
+func (m *CPU) Start() {
 	if m.ctx != nil {
 		return
 	}
@@ -81,12 +89,12 @@ func (m *CPUMonitor) Start() {
 					totalDiff = 1
 				}
 
-				usage := 100.0 * (1.0 - (float32(idleDiff) / float32(totalDiff)))
-				if usage > cpuMaxUsage {
-					usage = cpuMaxUsage
+				usage := 100 - ((idleDiff * 100) / totalDiff)
+				if usage > CPUMaxUsage {
+					usage = CPUMaxUsage
 				}
-
 				m.setUsage(uint8(usage))
+
 				stats = currentStats
 
 				time.Sleep(m.interval)
@@ -95,7 +103,7 @@ func (m *CPUMonitor) Start() {
 	}()
 }
 
-func (m *CPUMonitor) Stop() {
+func (m *CPU) Stop() {
 	if m.cancel != nil {
 		m.cancel()
 		m.wg.Wait()
@@ -103,17 +111,17 @@ func (m *CPUMonitor) Stop() {
 		m.ctx = nil
 		m.cancel = nil
 
-		m.setUsage(0)
+		m.setUsage(CPUMinUsage)
 	}
 }
 
-func (m *CPUMonitor) Usage() uint8 {
+func (m *CPU) Usage() uint8 {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.usage
 }
 
-func (m *CPUMonitor) setUsage(usage uint8) {
+func (m *CPU) setUsage(usage uint8) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.usage = usage

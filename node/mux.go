@@ -8,14 +8,14 @@ import (
 )
 
 func newStatsMux(
-	cpuMonitor monitor.Monitor,
-	memMonitor monitor.Monitor,
+	cpu monitor.Monitor,
+	mem monitor.Monitor,
 	logger *log.Logger,
 ) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /summary", getStatsSummary(
-		cpuMonitor,
-		memMonitor,
+		cpu,
+		mem,
 		logger,
 	))
 	return mux
