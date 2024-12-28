@@ -4,13 +4,18 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/zvxte/scale/mtls"
 	"github.com/zvxte/scale/node"
 )
 
 func main() {
 	logger := log.Default()
 
-	tlsConfig, err := node.LoadMTLSConfig("", "", "")
+	tlsConfig, err := mtls.Load(
+		"/etc/scale/ca.crt",
+		"/etc/scale/node.key",
+		"/etc/scale/node.crt",
+	)
 	if err != nil {
 		logger.Println(fmt.Errorf("failed to load TLS config: %w", err))
 		return

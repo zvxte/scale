@@ -1,4 +1,4 @@
-package node
+package mtls
 
 import (
 	"crypto/tls"
@@ -8,29 +8,13 @@ import (
 	"os"
 )
 
-const (
-	DefaultCACertFile = "/etc/scale/ca.crt"
-	DefaultKeyFile    = "/etc/scale/node.key"
-	DefaultCertFile   = "/etc/scale/node.crt"
-)
-
-// LoadMTLSConfig loads the TLS configuration for mutual authentication.
-// Default file paths will be used for empty string arguments.
-func LoadMTLSConfig(caCertFile, keyFile, certFile string) (*tls.Config, error) {
-	if keyFile == "" {
-		keyFile = DefaultKeyFile
-	}
-	if certFile == "" {
-		certFile = DefaultCertFile
-	}
+// Load returns an mTLS configuration.
+func Load(caCertFile, keyFile, certFile string) (*tls.Config, error) {
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load X509 key pair: %w", err)
 	}
 
-	if caCertFile == "" {
-		caCertFile = DefaultCACertFile
-	}
 	caCert, err := os.ReadFile(caCertFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read CA certificate: %w", err)
