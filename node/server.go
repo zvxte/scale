@@ -5,26 +5,20 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/zvxte/scale/node/monitor"
 )
 
-func NewServer(tlsConfig *tls.Config, logger *log.Logger) *http.Server {
-	cpu := monitor.NewCPU(5*time.Second, logger)
-	cpu.Start()
-
-	mem := monitor.NewMem(5*time.Second, logger)
-	mem.Start()
-
-	mux := http.NewServeMux()
-
-	statsMux := newStatsMux(cpu, mem, logger)
-	mux.Handle("/stats/", http.StripPrefix("/stats", statsMux))
-
+func NewServer(
+	addr string,
+	tlsConfig *tls.Config,
+	cpuInterval time.Duration,
+	memInterval time.Duration,
+	logger *log.Logger,
+) *http.Server {
+	mux := newMux(cpuInterval, memInterval, logger)
 	return &http.Server{
-		Addr:      ":4000",
-		Handler:   mux,
+		Addr:      addr,
 		TLSConfig: tlsConfig,
+		Handler:   mux,
 		ErrorLog:  logger,
 	}
 }

@@ -12,13 +12,13 @@ import (
 	"github.com/zvxte/scale/node/monitor"
 )
 
-func TestGetStatsSummary(t *testing.T) {
+func TestGetStats(t *testing.T) {
 	cpu := monitor.NewMock()
 	mem := monitor.NewMock()
 	logger := log.Default()
 
 	req := httptest.NewRequest(
-		http.MethodGet, "/stats/summary", nil,
+		http.MethodGet, "/stats", nil,
 	)
 
 	tests := []struct {
@@ -31,18 +31,18 @@ func TestGetStatsSummary(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
-			handler := getStatsSummary(cpu, mem, logger)
+			handler := getStats(cpu, mem, logger)
 			handler(recorder, req)
 
 			resp := recorder.Result()
 			if resp.StatusCode != test.expectedStatusCode {
 				t.Errorf(
-					"getStatsSummary() StatusCode=%d, Expected=%d",
+					"getStats() StatusCode=%d, Expected=%d",
 					resp.StatusCode, test.expectedStatusCode,
 				)
 			}
 
-			stats := statsSummary{
+			stats := stats{
 				Cpu: monitor.CPUMaxUsage + 1, Mem: monitor.MemMaxUsage + 1,
 			}
 
@@ -53,21 +53,21 @@ func TestGetStatsSummary(t *testing.T) {
 			decoder.DisallowUnknownFields()
 			if err := decoder.Decode(&stats); err != nil {
 				t.Errorf(
-					"getStatsSummary() Error=%v, Body=%s",
+					"getStats() Error=%v, Body=%s",
 					err, rawBody.String(),
 				)
 			}
 
 			if stats.Cpu > monitor.CPUMaxUsage {
 				t.Errorf(
-					"getStatsSummary() Cpu=%d, MaxCpu=%d, Body=%s",
+					"getStats() Cpu=%d, MaxCpu=%d, Body=%s",
 					stats.Cpu, monitor.CPUMaxUsage, rawBody.String(),
 				)
 			}
 
 			if stats.Mem > monitor.MemMaxUsage {
 				t.Errorf(
-					"getStatsSummary() Mem=%d, MaxMem=%d, Body=%s",
+					"getStats() Mem=%d, MaxMem=%d, Body=%s",
 					stats.Mem, monitor.MemMaxUsage, rawBody.String(),
 				)
 			}

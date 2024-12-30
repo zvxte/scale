@@ -3,12 +3,18 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/zvxte/scale/mtls"
 	"github.com/zvxte/scale/node"
 )
 
 func main() {
+	addr := "localhost:4000"
+
+	cpuInterval := 10 * time.Second
+	memInterval := 10 * time.Second
+
 	logger := log.Default()
 
 	tlsConfig, err := mtls.Load(
@@ -21,7 +27,7 @@ func main() {
 		return
 	}
 
-	server := node.NewServer(tlsConfig, logger)
+	server := node.NewServer(addr, tlsConfig, cpuInterval, memInterval, logger)
 	if err := server.ListenAndServeTLS("", ""); err != nil {
 		logger.Println(fmt.Errorf("failed to run server: %w", err))
 		return
