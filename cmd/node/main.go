@@ -11,17 +11,15 @@ import (
 
 func main() {
 	addr := "localhost:4000"
-
+	caCertFile := "/etc/scale/ca.crt"
+	keyFile := "/etc/scale/node.key"
+	certFile := "/etc/scale/node.crt"
 	cpuInterval := 10 * time.Second
 	memInterval := 10 * time.Second
 
 	logger := log.Default()
 
-	tlsConfig, err := mtls.Load(
-		"/etc/scale/ca.crt",
-		"/etc/scale/node.key",
-		"/etc/scale/node.crt",
-	)
+	tlsConfig, err := mtls.Load(caCertFile, keyFile, certFile)
 	if err != nil {
 		logger.Println(fmt.Errorf("failed to load TLS config: %w", err))
 		return
