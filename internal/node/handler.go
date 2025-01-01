@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/zvxte/scale/node/monitor"
+	"github.com/zvxte/scale/pkg/monitor"
 )
 
 type stats struct {

@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/zvxte/scale/mtls"
-	"github.com/zvxte/scale/node"
+	"github.com/zvxte/scale/internal/node"
+	"github.com/zvxte/scale/pkg/mtls"
 )
 
 func main() {
