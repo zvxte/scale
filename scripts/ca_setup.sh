@@ -11,15 +11,18 @@ DAYS_VALID="365"
 cat > $OPENSSL_CONFIG_FILE <<EOL
 [ req ]
 default_bits = $KEY_SIZE
-default_keyfile = $KEY_FILE
 distinguished_name = req_distinguished_name
-req_extensions = v3_req
+req_extensions = v3_ca
 prompt = no
 
 [ req_distinguished_name ]
 commonName = $HOSTNAME
 
-[ v3_req ]
+[ v3_ca ]
+basicConstraints = critical,CA:TRUE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+keyUsage = critical, cRLSign, keyCertSign
 subjectAltName = @alt_names
 
 [ alt_names ]
@@ -30,6 +33,6 @@ openssl genpkey -algorithm RSA -out $KEY_FILE \
     -pkeyopt rsa_keygen_bits:$KEY_SIZE -quiet
 
 openssl req -x509 -new -key $KEY_FILE -out $CERT_FILE -config \
-    $OPENSSL_CONFIG_FILE -extensions v3_req -sha256 -days $DAYS_VALID
+    $OPENSSL_CONFIG_FILE -extensions v3_ca -sha256 -days $DAYS_VALID
 
 rm $OPENSSL_CONFIG_FILE
