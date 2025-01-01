@@ -19,7 +19,7 @@ func main() {
 
 	logger := log.Default()
 
-	tlsConfig, err := mtls.Load(caCertFile, keyFile, certFile)
+	tlsConfig, err := mtls.LoadServer(caCertFile, keyFile, certFile)
 	if err != nil {
 		logger.Println(fmt.Errorf("failed to load TLS config: %w", err))
 		return
